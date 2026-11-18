@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="narrow">
+  <div class="counts">
+    <div class="crash-count"><span>{{ stored }}</span> Crash reports stored</div>
+    <div class="crash-count"><span>{{ last_day }}</span> Received in the last 24 hours</div>
+  </div>
+  <div class="well">
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+    <form method="get" action="/">
+      <div class="input-group">
+        <span class="input-addon">Crash ID</span>
+        <input type="text" name="id" class="input-crashid" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" autofocus>
+        <button class="btn btn-primary" type="submit">Go</button>
+      </div>
+    </form>
+    <div class="divider">OR</div>
+    {% if user %}
+      <a class="btn btn-lg btn-primary btn-block" href="/dashboard">{{ icon("grid") }} View Dashboard</a>
+    {% else %}
+      <a class="btn btn-lg btn-success btn-block" href="/login">{{ icon("log-in") }} Login</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

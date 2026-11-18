@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="well actions">
+  <div><a class="btn" href="/{{ crash_id }}">&larr; Back to Details</a></div>
+  <div>
+    <a class="btn" href="/{{ crash_id }}/carburetor/data">{{ icon("download") }} Full data (JSON)</a>
+    <a class="btn" href="/{{ crash_id }}/raw">{{ icon("code") }} Even More Raw &rarr;</a>
+  </div>
+</div>
+
+<div class="raw-tabs">
+  <input class="sr-only" type="radio" name="raw-tab" id="raw-tab-stack" checked>
+  <input class="sr-only" type="radio" name="raw-tab" id="raw-tab-memory">
+  <input class="sr-only" type="radio" name="raw-tab" id="raw-tab-raw">
+  <ul class="tabs">
+    <li><label for="raw-tab-stack">Stack</label></li>
+    <li><label for="raw-tab-memory">Memory</label></li>
+    <li><label for="raw-tab-raw">Raw</label></li>
+  </ul>
+  <pre class="raw-pane" id="pane-stack">{{ view.stack }}</pre>
+  <pre class="raw-pane" id="pane-memory">{{ view.memory }}</pre>
+  <pre class="raw-pane" id="pane-raw">{{ view.raw }}</pre>
+</div>
+{% endblock %}

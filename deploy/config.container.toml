@@ -1,0 +1,5 @@
+# Default configuration baked into the container image.
+# Mount your own over /etc/throttle/throttle.toml (see config.example.toml).
+
+listen = "0.0.0.0:9090"
+data_dir = "/data"

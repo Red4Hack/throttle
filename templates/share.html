@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="share-page">
+<h1>Sharing</h1>
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+<h2>Sharing With Others</h2>
+<div class="well well-tight">
+  <table class="table table-striped table-share">
+    <tbody>
+    {% for p in sharing %}
+      <tr>
+        <td class="col-icon">{% if p.avatar %}<img class="avatar" src="{{ p.avatar }}" alt="" width="20" height="20">{% else %}{{ icon("user") }}{% endif %}</td>
+        <td>{{ p.name or p.id }} <small class="muted">{{ p.id }}</small></td>
+        <td>{% if p.accepted_at %}has access{% else %}<span class="badge badge-info">invited</span>{% endif %}</td>
+        <td class="col-actions"><form class="inline" method="post" action="/settings/share/revoke"><input type="hidden" name="user" value="{{ p.id }}"><button class="btn btn-sm btn-danger" type="submit">Revoke</button></form></td>
+      </tr>
+    {% else %}
+      <tr><td class="text-center share-empty" colspan="4">You aren't sharing with anybody</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="well-foot">
+    <form method="post" action="/settings/share/invite">
+      <div class="input-group">
+        <span class="input-addon">Steam ID</span>
+        <input type="text" name="user" placeholder="SteamID64 or STEAM_0:1:1234" autocomplete="off" spellcheck="false" maxlength="40">
+      </div>
+      <button class="btn btn-success btn-block" type="submit">{{ icon("inbox") }} Invite</button>
+    </form>
+  </div>
+</div>
+
+<h2>Shared With You</h2>
+<div class="well well-tight">
+  <table class="table table-striped table-share">
+    <tbody>
+    {% for p in shared %}
+      <tr>
+        <td class="col-icon">{% if p.avatar %}<img class="avatar" src="{{ p.avatar }}" alt="" width="20" height="20">{% else %}{{ icon("user") }}{% endif %}</td>
+        <td>{{ p.name or p.id }} <small class="muted">{{ p.id }}</small></td>
+        <td>{% if p.accepted_at %}<a href="/dashboard?user={{ p.id }}">view reports</a>{% else %}<form class="inline" method="post" action="/settings/share/accept"><input type="hidden" name="owner" value="{{ p.id }}"><button class="btn btn-sm btn-success" type="submit">Accept</button></form>{% endif %}</td>
+        <td class="col-actions"><form class="inline" method="post" action="/settings/share/revoke"><input type="hidden" name="owner" value="{{ p.id }}"><button class="btn btn-sm" type="submit">{{ 'Leave' if p.accepted_at else 'Decline' }}</button></form></td>
+      </tr>
+    {% else %}
+      <tr><td class="text-center share-empty" colspan="4">Nobody is sharing with you</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+</div>
+{% endblock %}

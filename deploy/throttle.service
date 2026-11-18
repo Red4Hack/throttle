@@ -1,0 +1,34 @@
+[Unit]
+Description=Throttle crash report server
+After=network.target
+
+[Service]
+Type=simple
+User=throttle
+Group=throttle
+# data_dir = "/var/lib/throttle" in the config.
+ExecStart=/usr/local/bin/throttle --config /etc/throttle/throttle.toml serve
+Restart=on-failure
+RestartSec=2
+StateDirectory=throttle
+WorkingDirectory=/var/lib/throttle
+LimitNOFILE=65536
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/throttle
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

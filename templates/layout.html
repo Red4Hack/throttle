@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Throttle{% if hostname %} · {{ hostname }}{% endif %}</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/theme.js"></script>
+</head>
+<body>
+<header class="navbar">
+  <div class="container navbar-inner">
+    <a class="brand" href="/">{{ icon("gauge") }} Throttle</a>
+    <div class="navbar-right">
+    <button type="button" id="theme-toggle" class="theme-toggle" title="Toggle light/dark" aria-label="Toggle light/dark"><span class="icon-sun">&#9728;&#xFE0E;</span><span class="icon-moon">&#9790;&#xFE0E;</span></button>
+    {% if user %}
+      <details class="dropdown">
+        <summary>
+          {% if user.avatar %}<img class="avatar" src="{{ user.avatar }}" alt="" width="30" height="30">{% else %}{{ icon("user") }}{% endif %}
+          <span class="hide-narrow">{{ user.name or user.id }}</span>
+          {{ icon("chevron-down") }}
+        </summary>
+        <ul class="menu">
+          <li><a href="/dashboard">{{ icon("grid") }} Dashboard</a></li>
+          <li><a href="/settings/share">{{ icon("inbox") }} Sharing</a></li>
+          <li><form method="post" action="/logout"><button type="submit">{{ icon("log-out") }} Logout</button></form></li>
+        </ul>
+      </details>
+    {% else %}
+      <a class="btn btn-success" href="/login">{{ icon("log-in") }} Login</a>
+    {% endif %}
+    </div>
+  </div>
+</header>
+<main class="container">
+{% if maintenance %}<div class="alert alert-info">{{ maintenance }}</div>{% endif %}
+{% block content %}{% endblock %}
+</main>
+<footer class="footer container">
+  <div><small>Powered by <a href="https://forums.alliedmods.net/showthread.php?t=277703">Accelerator</a> &amp; <a href="https://steampowered.com">Steam</a></small></div>
+  <div><small><a class="footer-stats" href="/stats">Statistics</a>{% if show_version %} <span class="muted">&ndash; Throttle {{ version }}</span>{% endif %}</small></div>
+</footer>
+</body>
+</html>

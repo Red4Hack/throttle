@@ -1,0 +1,16 @@
+{"ts":1793393598012,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && grep -n \"enum WebError\" src/we ✓"}
+{"ts":1793393676641,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && sed -i 's/message = escape_htm ✓"}
+{"ts":1793393965500,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\np='src/ingest/ ✓"}
+{"ts":1793395366660,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\np='src/web/pag ✓"}
+{"ts":1793395890454,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\nimport re\n# -- ✓"}
+{"ts":1793395934614,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\np='src/web/tes ✓"}
+{"ts":1793396556886,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\np='templates/l ✓"}
+{"ts":1793397232784,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && sed -i 's#^\\({% block title %} ✓"}
+{"ts":1793397988374,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && sed -i 's/{% block title %}Cra ✓"}
+{"ts":1793398828824,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\np='src/web/ico ✓"}
+{"ts":1793399265509,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\nimport re,glob ✓"}
+{"ts":1793400299242,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'PYEOF'\np='src/web ✓"}
+{"ts":1793400356530,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\np='src/web/tes ✓"}
+{"ts":1793401521525,"who":"FrostyStone","kind":"test","text":"cd /home/hack/Dev/throttle && python3 - <<'E'\nimport re\nfa=o ✓"}
+{"ts":1793404046528,"who":"SwiftRaven","kind":"test","text":"cd /home/hack/Dev/throttle && ls ~/.claude/projects/*throttl ✓"}
+{"ts":1793404243033,"who":"SwiftRaven","kind":"edit","text":"/home/hack/Dev/throttle/static/app.css"}

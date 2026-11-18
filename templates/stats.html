@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="stats-page">
+{% if overview %}
+<div class="counts">
+  <div class="crash-count"><span>{{ overview.servers }}</span> Unique servers, last 24 hours</div>
+  <div class="crash-count"><span>{{ overview.on_record }}</span> Crash reports on record</div>
+  <div class="crash-count"><span>{{ overview.last_day }}</span> Crash reports, last 24 hours</div>
+</div>
+{% else %}
+<div class="well well-tight">
+  <ol class="breadcrumb">
+    {% for c in crumbs %}<li class="{{ '' if c.href else 'active' }}">{% if c.href %}<a href="{{ c.href }}">{{ c.label }}</a>{% else %}{{ c.label }}{% endif %}</li>{% endfor %}
+  </ol>
+</div>
+{% endif %}
+
+<h2>Crash Reports / Hour <small>{% if filtered %}only reports still on record are counted{% else %}last 7 days{% endif %}</small></h2>
+<div class="well">{{ hourly | safe }}</div>
+
+<h2>Crash Reports / Day <small>{% if filtered %}only reports still on record are counted{% else %}last 90 days{% endif %}</small></h2>
+<div class="well">{{ daily | safe }}</div>
+
+<div class="section-head">
+  <h2>Top Crashers</h2>
+  <nav class="segmented" aria-label="Period">
+    {% for s in scopes %}<a class="{{ 'active' if s.active else '' }}" href="{{ s.href }}">{{ s.label }}</a>{% endfor %}
+  </nav>
+</div>
+<div class="well well-tight">
+  {% if top %}
+  <table class="table table-striped table-ranked">
+    <thead><tr><th></th><th>Function</th><th>Crashes</th><th class="hide-narrow">Servers</th><th class="hide-narrow">Accounts</th></tr></thead>
+    <tbody>
+    {% for t in top %}
+    <tr>
+      <th>{{ t.rank }}</th>
+      <td class="mono">{% if t.label %}{{ t.label }}{% else %}{% if t.href %}<a href="{{ t.href }}">{% endif %}{% if t.module %}{{ t.module }}{% if t.function %}!{{ t.function }}{% endif %}{% elif t.function %}{{ t.function }}{% else %}<em>Unknown</em>{% endif %}{% if t.href %}</a>{% endif %}{% endif %}</td>
+      <td>{{ t.crashes }}</td>
+      <td class="hide-narrow">{{ t.servers }}</td>
+      <td class="hide-narrow">{{ t.owners }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-center muted well-foot">No processed crashes in this period.</p>
+  {% endif %}
+</div>
+
+<h2>Latest Crash Reports</h2>
+<div class="well well-tight">
+  {% if latest %}
+  <table class="table table-striped table-latest">
+    <thead><tr><th class="col-icon"></th><th>Crash ID</th><th class="hide-narrow">Uploaded</th><th>Function</th></tr></thead>
+    <tbody>
+    {% for r in latest %}
+    <tr>
+      <td class="col-icon">{% if r.server %}{{ r.server | identicon }}{% endif %}</td>
+      <td class="mono"><a href="/{{ r.id }}">{{ r.id | crashid }}</a>{% if r.repeats %}<span class="badge badge-repeat" title="Reported {{ r.repeats + 1 }} times">{{ icon("repeat") }}&times;{{ r.repeats + 1 }}</span>{% endif %}</td>
+      <td class="hide-narrow"><span title="{{ r.created_at | utc }}">{{ r.created_at | ago }}</span></td>
+      <td class="mono col-frame">{{ r.rendered }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-center muted well-foot">No crashes to show.</p>
+  {% endif %}
+</div>
+
+{% if overview %}
+<h2>Processing Performance</h2>
+<div class="well">
+  <div class="perf-grid">
+  {% for c in overview.charts %}
+  <figure class="perf">
+    <figcaption>{{ c.title }}</figcaption>
+    {{ c.svg | safe }}
+    <table class="legend">
+      <thead><tr><th></th><th></th><th>Cur:</th><th>Min:</th><th>Avg:</th><th>Max:</th></tr></thead>
+      <tbody>
+      {% for l in c.legend %}<tr><td><span class="swatch {{ l.class }}"></span></td><td>{{ l.label }}</td><td>{{ l.cur }}</td><td>{{ l.min }}</td><td>{{ l.avg }}</td><td>{{ l.max }}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </figure>
+  {% endfor %}
+  </div>
+</div>
+{% endif %}
+</div>
+{% endblock %}

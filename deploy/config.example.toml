@@ -1,0 +1,112 @@
+# Throttle configuration. Every key is optional; the values below are the defaults.
+# Unknown keys are rejected, so a typo fails at startup instead of being ignored.
+
+listen = "127.0.0.1:8080"
+
+# Public host name, with a port if it is not 80/443. Optional: when unset, the Steam
+# login and the CSRF check use the Host the browser connected to, so localhost,
+# 0.0.0.0 and a LAN address all work. Pin it in production and behind a reverse
+# proxy, so only this name is trusted.
+# hostname = "throttle.example.com"
+
+# true when the site is reached over HTTPS (directly or behind a TLS proxy).
+https = false
+
+# Database, dumps, symbols and the generated secret key all live here.
+data_dir = "data"
+
+# Addresses of reverse proxies allowed to set X-Forwarded-For.
+trusted_proxies = []
+
+# maintenance_message = "Down for maintenance."
+show_version = true
+
+# Latest Accelerator release; older reports show an "outdated" warning.
+# accelerator_version = "2.4.3"
+
+# Optional. The Steam login works without it. Names and avatars are then read from the
+# public profile page; with a key they come from the Web API (steamcommunity.com is
+# still the fallback). Either way Throttle asks Steam for them in the background.
+# steam_api_key = "..."
+
+# Enables GET /metrics (Prometheus) for "Authorization: Bearer <token>"; min. 16 characters.
+# metrics_token = "..."
+
+# SteamID64 lists.
+admins = []
+developers = []
+
+[limits]
+max_dump_bytes = 67108864        # 64 MiB
+max_metadata_bytes = 2097152     # 2 MiB
+max_symbol_bytes = 536870912     # 512 MiB (uncompressed)
+rate_limit = 12                  # crashes per owner+IP per window
+rate_window_secs = 3600
+queue_watermark = 5000           # pending crashes before presubmit asks for metadata only
+dedupe_threshold = 50            # same stackhash seen this often in 24h => metadata only (0 = off)
+repeat_window_days = 30          # the same crash again within this many days is counted, not stored again (0 = off)
+disk_quota_bytes = 53687091200   # 50 GiB of dumps, then the oldest unviewed ones are evicted
+disk_min_free_bytes = 1073741824 # below 1 GiB free the server answers 503
+
+[processing]
+workers = 0                      # 0 = half of the CPU cores
+max_attempts = 3                 # a crash that keeps failing is given up on
+timeout_secs = 120
+# Directories under data_dir/symbols, searched in order. Put trusted stores
+# before "public": anything anyone uploads lands in "public".
+symbol_stores = ["public"]
+# Parsed symbol files kept in memory and shared by all workers, so a dump does not
+# reload the same engine/server .sym again. Estimated MiB (a parsed file takes about
+# 4x its text); least recently used go first. 0 = off.
+symbol_cache_mib = 256
+
+[retention]
+max_age_days = 90
+keep_per_owner = 100
+keep_per_anonymous_ip = 50
+batch_size = 500
+interval_secs = 300             # seconds between retention passes
+
+# Notices: banners attached to a crash while it is processed. Rules are data and
+# never run as SQL. Every condition of a rule must hold; patterns use * and ?.
+# Frame modules, module_loaded and module_missing ignore case; functions,
+# metadata values and the command line do not. Changes apply to crashes
+# processed (or reprocessed) from the next start on.
+#
+# A notice whose id starts with "nosteam-" has one more effect: the owner+IP it
+# was attached to is turned away for 30 days (for servers you don't support).
+#
+# [[notices]]
+# id = "sys-error"
+# severity = "info"              # info, warning or danger
+# text = "The engine aborted with an error message (Sys_Error)."
+# [notices.rule]
+# frame = { module = "engine*.so", function = "Sys_Error*", within = 3 }
+
+# Symbol servers in the Breakpad layout (<url>/<name>/<build id>/<stem>.sym).
+# Windows modules (*.pdb) that crashes are missing symbols for are downloaded
+# from them every interval_secs, and those crashes are processed again. The
+# store must also be listed in processing.symbol_stores (before "public" if you
+# trust it more). Microsoft's own symbol server is not supported: it serves
+# PDBs, not .sym files.
+#
+# [symbol_fetch]
+# interval_secs = 600
+# batch_size = 20
+# retry_days = 7            # a module no server has is asked for again after this long
+#
+# [[symbol_fetch.servers]]
+# store = "mozilla"
+# url = "https://symbols.mozilla.org"
+
+# Deep analysis of a dump (registers, SourcePawn plugin frames) with the external
+# carburetor program, built from github.com/asherkin/carburetor (see the
+# default Containerfile image, which already includes it). It parses untrusted dumps, so it runs
+# with an empty environment, a time and output limit, and a cap on parallel runs.
+# Only people who can manage a crash see the page. Off unless a path is set.
+#
+# [carburetor]
+# path = "/usr/local/bin/carburetor"   # absolute
+# timeout_secs = 120
+# max_concurrent = 2
+# max_output_bytes = 67108864

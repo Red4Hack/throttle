@@ -1,7 +1,8 @@
-/.wine/
-/app/config.php
-/symbols/
-/dumps/
-/logs/
-/vendor/
-/cache/
+/target/
+/data/
+/tools/oracle/bin/
+# Real crash dumps carry server passwords, paths and addresses: keep them out of git.
+/*.dmp
+/*.dmp.txt
+/tests/local/
+/*.tar.gz

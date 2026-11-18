@@ -1,0 +1,8 @@
+# Default image configuration (with carburetor, for the deep analysis).
+# Mount your own over /etc/throttle/throttle.toml (see config.example.toml).
+
+listen = "0.0.0.0:9090"
+data_dir = "/data"
+
+[carburetor]
+path = "/usr/local/bin/carburetor"

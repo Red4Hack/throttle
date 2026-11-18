@@ -1,0 +1,32 @@
+OS|Linux|0.0.0 Linux 4.9.60-linuxkit-aufs #1 SMP Mon Nov 6 16:00:12 UTC 2017 x86_64
+CPU|amd64|family 6 model 70 stepping 1|4
+GPU|||
+Crash|SIGSEGV /0x00000000|0x45|0
+Module|crash||crash|C0BCC3F19827FE653058404B2831D9E60|0x00400000|0x00419fff|1
+Module|libm-2.23.so||libm-2.23.so|E45DB8DFAF2D09FD640C8FE377D572DE0|0x7f513fe54000|0x7f513ff5bfff|0
+Module|libc-2.23.so||libc-2.23.so|451A38B5067979D2073822A5CEB24C4B0|0x7f514015d000|0x7f514031cfff|0
+Module|libgcc_s.so.1||libgcc_s.so.1|E20A22685DC6C165B6AAA12FA6765A6E0|0x7f5140527000|0x7f514053cfff|0
+Module|libstdc++.so.6.0.21||libstdc++.so.6.0.21|81C893CB9B923C5201ACEF171B52D5260|0x7f514073d000|0x7f51408aefff|0
+Module|libpthread-2.23.so||libpthread-2.23.so|23E017CE2254FC6511D9BC8F534BB4F00|0x7f5140abf000|0x7f5140ad6fff|0
+Module|ld-2.23.so||ld-2.23.so|59627B5D2255A375C17BD4C3FD05F5A60|0x7f5140cdc000|0x7f5140d01fff|0
+Module|linux-gate.so||linux-gate.so|75185F6C04B9B48FB8DFD832E74AD31A0|0x7fff5aef1000|0x7fff5aef2fff|0
+
+0|0|crash||||0x1d72
+0|1|libc-2.23.so||||0xf302e
+0|2|libc-2.23.so||||0x87800
+0|3|||||0x400000
+0|4|ld-2.23.so||||0xfac6
+0|5|crash||||0x1ec0
+0|6|crash||||0x14c30
+0|7|libc-2.23.so||||0x20830
+0|8|crash||||0x1c70
+0|9|crash||||0x1dc0
+0|10|crash||||0x1c70
+0|11|crash||||0x14ca0
+0|12|crash||||0x1dc0
+0|13|crash||||0x1de9
+0|14|||||0x7fff5aef1000
+0|15|crash||||0x40
+0|16|||||0x7f5140cdc000
+0|17|crash||||0x1dc0
+exit=0

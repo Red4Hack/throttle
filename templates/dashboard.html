@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block content %}
+{% if tabs %}
+<ul class="tabs">
+  <li class="{{ '' if filter_id else 'active' }}"><a href="/dashboard" title="All">{{ icon("users") }}</a></li>
+  {% for p in people %}
+  <li class="{{ 'active' if p.active else '' }}"><a href="/dashboard?user={{ p.id }}" title="{{ p.name or p.id }}">{% if p.avatar %}<img class="avatar" src="{{ p.avatar }}" alt="{{ p.name or p.id }}" width="20" height="20">{% else %}{{ icon("user") }}{% endif %}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% if filter_id and not filter_in_tabs %}
+<div class="alert alert-info">Only showing the reports of <code>{{ filter_id }}</code>. <a href="/dashboard">Show all</a></div>
+{% endif %}
+{% if deleted is not none %}<div class="alert {{ 'alert-success' if deleted else 'alert-info' }}">{% if deleted %}{{ icon("check") }} {% endif %}Deleted {{ deleted }} report{{ '' if deleted == 1 else 's' }}.</div>{% endif %}
+<form id="bulk" method="post" action="/dashboard/delete">{% if filter_id %}<input type="hidden" name="user" value="{{ filter_id }}">{% endif %}</form>
+<div class="bulk-scope">
+<div class="well well-tight">
+  <table class="table table-striped table-list">
+    <thead>
+      <tr>
+        <th class="col-check">{% if rows %}{% if select_all %}<a href="/dashboard?page={{ page }}{% if filter_id %}&amp;user={{ filter_id }}{% endif %}" title="Clear the selection">{{ icon("check-square") }}</a>{% else %}<a href="/dashboard?page={{ page }}&amp;select=all{% if filter_id %}&amp;user={{ filter_id }}{% endif %}" title="Select all reports on this page">{{ icon("square") }}</a>{% endif %}{% endif %}</th>
+        <th class="col-icon"></th>
+        <th>Crash ID</th>
+        <th>Uploaded</th>
+        {% if show_owner %}<th class="col-icon hide-narrow"></th>{% endif %}
+        <th class="hide-narrow">Function</th>
+        <th class="col-bulk"><div class="bulk-delete">
+          <input type="checkbox" id="bulk-confirm" class="sr-only">
+          <label class="btn btn-sm btn-danger" for="bulk-confirm" title="Delete the selected reports">{{ icon("trash") }} Delete</label>
+          <div class="popover">
+            <p class="popover-title">{{ icon("alert-triangle") }}<span>Delete the selected reports?</span></p>
+            <p class="muted">This permanently deletes the reports, their dumps and their metadata.</p>
+            <div class="popover-actions">
+              <label class="btn btn-sm" for="bulk-confirm">Cancel</label>
+              <button class="btn btn-sm btn-danger" type="submit" form="bulk">{{ icon("trash") }} Delete permanently</button>
+            </div>
+          </div>
+        </div></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="{{ 'row-warning' if r.status == 0 or r.status == 1 else ('row-danger' if r.status == 3 else '') }}">
+        <td class="col-check"><input type="checkbox" form="bulk" name="id" value="{{ r.id }}"{% if select_all %} checked{% endif %} aria-label="Select report {{ r.id | crashid }}"></td>
+        <td class="col-icon">{% if r.server %}{{ r.server | identicon }}{% endif %}</td>
+        <td class="mono"><a class="crash-link" href="/{{ r.id }}">{{ r.id | crashid }}</a>{% if r.repeats %}<span class="badge badge-repeat" title="Reported {{ r.repeats + 1 }} times, the last {{ r.last_repeat_at | ago }}. Repeats are counted, not stored again.">{{ icon("repeat") }}&times;{{ r.repeats + 1 }}</span>{% endif %}</td>
+        <td><span title="{{ r.created_at | utc }}">{{ r.created_at | ago }}</span></td>
+        {% if show_owner %}
+        <td class="col-icon hide-narrow">{% if r.owner %}<a href="/dashboard?user={{ r.owner }}" title="{{ r.owner_name or r.owner }}">{% if r.owner_avatar %}<img class="avatar" src="{{ r.owner_avatar }}" alt="{{ r.owner_name or r.owner }}" width="20" height="20">{% else %}{{ icon("user") }}{% endif %}</a>{% endif %}</td>
+        {% endif %}
+        <td class="hide-narrow mono col-frame">
+          {% if r.status == 0 or r.status == 1 %}<span class="muted">processing…</span>
+          {% elif r.status == 3 %}failed
+          {% elif not r.has_dump %}<span class="muted">metadata only</span>
+          {% elif r.crash_module %}{{ r.crash_module }}{% if r.crash_function %}!{{ r.crash_function }}{% endif %}
+          {% else %}<span class="muted">unknown</span>{% endif %}
+        </td>
+        <td class="col-actions hide-narrow">
+          {% if r.notices %}<span class="badge badge-warning" title="{{ r.notices }} notice{{ '' if r.notices == 1 else 's' }}">{{ r.notices }}</span>{% endif %}
+          {% if user.admin and r.has_dump and (r.status == 2 or r.status == 3) %}<form class="inline" method="post" action="/{{ r.id }}/reprocess"><button class="btn btn-sm" type="submit" title="Reprocess">{{ icon("refresh") }}</button></form>{% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td class="text-center muted" colspan="7">No crashes. Point your servers' <code>core.cfg</code> at this site to start collecting them.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if prev or next %}
+  <div class="well-foot pager">
+    {% if prev %}<a class="btn btn-sm" href="/dashboard?page={{ prev }}{% if filter_id %}&amp;user={{ filter_id }}{% endif %}">&larr; Newer</a>{% endif %}
+    {% if next %}<a class="btn btn-sm next" href="/dashboard?page={{ next }}{% if filter_id %}&amp;user={{ filter_id }}{% endif %}">Older &rarr;</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

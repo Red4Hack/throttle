@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+{% block content %}
+{% macro frame_row(f) %}
+<tr class="{{ 'row-muted' if '__SourceHook_' in f.rendered else '' }}">
+  <th>{{ f.frame }}</th>
+  <td class="mono">{{ f.rendered }}{% if f.url %} <a class="icon-link" href="{{ f.url }}" rel="noreferrer noopener" title="View the source">{{ icon("external-link") }}</a>{% endif %}{% if '__SourceHook_' in f.rendered %} <span class="icon-link" title="This frame is from a function hook and is most likely unrelated to the cause of the crash.">{{ icon("anchor") }}</span>{% endif %}</td>
+</tr>
+{% endmacro %}
+{% macro module_row(m) %}
+<tr>
+  <td>{{ m.name }}</td>
+  <td class="mono">{{ m.identifier }}</td>
+  <td class="mono">{{ m.base or '' }}</td>
+  <td>{% if m.present %}yes{% else %}<span class="muted" title="No symbols for this module">{{ icon("alert-triangle") }} missing</span>{% endif %}</td>
+</tr>
+{% endmacro %}
+
+{% if not crash.owner_id %}
+  {% if not can_manage %}<div class="alert alert-info">This crash was submitted anonymously. If you are the owner, please configure Accelerator with your Steam ID.</div>{% endif %}
+{% elif not user %}
+  <div class="alert alert-info">If you are the owner of this crash, <a href="/login">login</a> to see more information.</div>
+{% elif not can_manage %}
+  <div class="alert alert-info">You can not see full information about this crash as you are not the owner.</div>
+{% endif %}
+
+<div class="well">
+  <dl class="dl-facts">
+    <dt>Uploaded</dt>
+    <dd>{{ crash.created_at | utc }} <span class="muted">({{ crash.created_at | ago }})</span></dd>
+    {% if crash.ip %}<dt>Upload IP</dt><dd class="mono">{{ crash.ip }}</dd>{% endif %}
+    {% if crash.owner_id %}
+      <dt>Owner</dt>
+      <dd>{{ crash.owner_name or crash.owner_id }}{% if can_manage %} <a href="/dashboard?user={{ crash.owner_id }}">all reports</a>{% endif %}</dd>
+    {% endif %}
+    {% if cmdline %}<dt>Command Line</dt><dd class="mono">{{ cmdline }}</dd>{% endif %}
+    {% if crash.status == 2 and crash.reason %}<dt>Crash reason</dt><dd class="mono">{{ crash.reason }}{% if crash.address %} at {{ crash.address }}{% endif %}</dd>{% endif %}
+    {% for row in metadata %}<dt>{{ row.label }}</dt><dd>{{ row.value or '' }}</dd>{% endfor %}
+  </dl>
+</div>
+
+{% if not crash.has_dump %}
+  <div class="alert alert-info">Only the metadata of this crash was uploaded; the server skipped the dump because the same crash is already well known.</div>
+{% elif crash.status == 0 %}
+  <div class="alert alert-info">This crash is waiting to be processed. Reload in a moment.</div>
+{% elif crash.status == 1 %}
+  <div class="alert alert-info">This crash is being processed right now.</div>
+{% elif crash.status == 3 %}
+  <div class="alert alert-danger">An error occurred while processing this crash{% if crash.error %}: {{ crash.error }}{% endif %}.</div>
+{% endif %}
+
+{% if crash.repeats %}<div class="alert alert-info">This crash was reported again {{ crash.repeats }} time{{ '' if crash.repeats == 1 else 's' }} (the last one {{ crash.last_repeat_at | ago }}). Repeats are counted here instead of being stored as separate reports.</div>{% endif %}
+{% if outdated %}<div class="alert alert-warning">This crash was submitted by an outdated Accelerator ({{ outdated }}), please <a href="https://forums.alliedmods.net/showthread.php?t=277703">update to the latest version</a> for full functionality.</div>{% endif %}
+
+{% if crash.status == 2 %}
+  {% for n in notices %}<div class="alert {{ 'alert-danger' if n.severity == 'danger' else ('alert-info' if n.severity == 'info' else 'alert-warning') }}">{{ n.text }}</div>{% endfor %}
+  {% if sourcepawn_warning %}<div class="alert alert-info">Update to SourceMod 1.10.0.6431 or later for improved SourcePawn stack traces.<br>This crash is from a server running a version of SourceMod that does not fully support SourcePawn stack walking, so the stack trace below may be incomplete or incorrect.</div>{% endif %}
+  {% if crash.thread %}<div class="alert alert-info">This crash is not from the main thread.<br>The stack trace below is of the thread that crashed.</div>{% endif %}
+  {% if sys_error %}<div class="alert alert-warning">The engine aborted with an error: <code>{{ sys_error }}</code></div>{% endif %}
+  {% if not modules %}<div class="alert alert-warning">This crash is missing a module list and will not have symbol information.</div>{% endif %}
+  {% if crash.bad_jump %}<div class="alert alert-warning">The program jumped to an address that is not code{% if crash.address %} ({{ crash.address }}){% endif %}, usually a call through a bad function pointer. The first frame below is that address; the next one is the code that made the call.</div>{% endif %}
+  {% if no_symbols %}<div class="alert alert-info">None of the modules of this crash have symbols on this server, so the stack trace shows module offsets instead of function names. Symbols are uploaded by the game server's Accelerator when it reports a crash here (its <code>MinidumpUrl</code> and <code>MinidumpSymbolUrl</code> must point to this server); the crash is processed again when they arrive.</div>{% endif %}
+  {% if stats %}
+  <div class="alert alert-info">
+    <a href="/stats/{{ stats.hash }}">{% if stats.total != 1 %}{{ stats.total }} reports share this crash signature. ({{ stats.owners }} owner{{ '' if stats.owners == 1 else 's' }} / {{ stats.servers }} address{{ '' if stats.servers == 1 else 'es' }}){% else %}This crash signature is unique.{% endif %}</a>
+  </div>
+  {% endif %}
+{% endif %}
+
+{% if can_manage %}
+<div class="well actions">
+  <div>
+    {% if crash.has_dump %}<a class="btn btn-primary" href="/{{ crash.id }}/download">{{ icon("download") }} Download Minidump</a>{% endif %}
+    {% if has_console %}<a class="btn" href="/{{ crash.id }}/console">{{ icon("terminal") }} View Console</a>{% endif %}
+    {% if has_meta %}<a class="btn" href="/{{ crash.id }}/metadata">{{ icon("file-text") }} Metadata</a>{% endif %}
+  </div>
+  <div>
+    {% if carburetor %}<a class="btn" href="/{{ crash.id }}/carburetor">{{ icon("eye") }} View Raw</a>{% elif crash.has_dump and crash.status == 2 %}<a class="btn" href="/{{ crash.id }}/raw">{{ icon("eye") }} View Raw</a>{% endif %}
+    {% if is_admin and crash.has_dump and (crash.status == 2 or crash.status == 3) %}<form class="inline" method="post" action="/{{ crash.id }}/reprocess"><button class="btn" type="submit">{{ icon("refresh") }} Reprocess</button></form>{% endif %}
+    <details class="confirm">
+      <summary class="btn btn-danger">{{ icon("trash") }} Delete</summary>
+      <div class="popover">
+        <p>This permanently deletes the report, its dump and its metadata.</p>
+        <form method="post" action="/{{ crash.id }}/delete"><button class="btn btn-danger btn-block" type="submit">Delete permanently</button></form>
+      </div>
+    </details>
+  </div>
+</div>
+{% endif %}
+
+{% if frames %}
+<h2>Stack Trace{% if crash.thread %} <small>(thread {{ crash.thread }})</small>{% endif %}</h2>
+<div class="well well-tight">
+  <table class="table table-stacktrace">
+    <thead><tr><th></th><th>Function</th></tr></thead>
+    <tbody>
+    {% for f in frames[:15] %}{{ frame_row(f) }}{% endfor %}
+    </tbody>
+  </table>
+  {% if frames[15:] %}
+  <details class="more">
+    <summary>Show {{ frames | length - 15 }} more frames</summary>
+    <table class="table table-stacktrace"><tbody>
+    {% for f in frames[15:] %}{{ frame_row(f) }}{% endfor %}
+    </tbody></table>
+  </details>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if modules %}
+<h2>Modules</h2>
+<div class="well well-tight">
+  <table class="table table-modules">
+    <thead><tr><th>Name</th><th>Identifier</th><th>Base</th><th>Symbols</th></tr></thead>
+    <tbody>
+    {% for m in modules[:10] %}{{ module_row(m) }}{% endfor %}
+    </tbody>
+  </table>
+  {% if modules[10:] %}
+  <details class="more">
+    <summary>Show {{ modules | length - 10 }} more modules</summary>
+    <table class="table table-modules"><tbody>
+    {% for m in modules[10:] %}{{ module_row(m) }}{% endfor %}
+    </tbody></table>
+  </details>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
