@@ -16,10 +16,10 @@ podman save localhost/throttle:latest | gzip > "$OUT"
 
 cat <<MSG
 
-Pronto: $OUT ($(du -h "$OUT" | cut -f1))
+Done: $OUT ($(du -h "$OUT" | cut -f1))
 
-  scp $OUT usuario@servidor:~/
-  # no servidor:
+  scp $OUT user@host:~/
+  # on the host:
   gunzip -c ~/$OUT | podman load
   podman rm -f throttle
   podman run -d --name throttle -p 127.0.0.1:9090:9090 -v throttle-data:/data \\
